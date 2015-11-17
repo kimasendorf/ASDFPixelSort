@@ -23,7 +23,7 @@ boolean saved = false;
 
 void setup() {
   img = loadImage(imgFileName+"."+fileType);
-  size(img.width, img.height);
+  surface.setSize(img.width, img.height);
   image(img, 0, 0);
 }
 
