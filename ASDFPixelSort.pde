@@ -22,8 +22,11 @@ int column = 0;
 boolean saved = false;
 
 void setup() {
+  size(400, 200);
+  surface.setResizable(true);
   img = loadImage(imgFileName+"."+fileType);
-  size(img.width, img.height);
+  
+  surface.setSize(img.width, img.height);
   image(img, 0, 0);
 }
 
