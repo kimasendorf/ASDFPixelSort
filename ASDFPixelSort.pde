@@ -41,15 +41,15 @@ void setup() {
   surface.setResizable(true);
   surface.setSize(img.width, img.height);
   
-  // load image onto surface
-  image(img, 0, 0);
+  // load image onto surface - scale to the available width,height for display
+  image(img, 0, 0, width, height);
 }
 
 
 void draw() {
   
   // loop through columns
-  while(column < width-1) {
+  while(column < img.width-1) {
     println("Sorting Column " + column);
     img.loadPixels(); 
     sortColumn();
@@ -58,7 +58,7 @@ void draw() {
   }
   
   // loop through rows
-  while(row < height-1) {
+  while(row < img.height-1) {
     println("Sorting Row " + column);
     img.loadPixels(); 
     sortRow();
@@ -66,13 +66,14 @@ void draw() {
     img.updatePixels();
   }
   
-  // load updated image onto surface
-  image(img, 0, 0);
+  // load updated image onto surface and scale to fit the display width,height
+  image(img, 0, 0, width, height);
   
   if(!saved && frameCount >= loops) {
     
-    // save surface
-    saveFrame(imgFileName+"_"+mode+".png");
+	// save img
+    img.save(imgFileName+"_"+mode+".png");
+	
     saved = true;
     println("Saved "+frameCount+" Frame(s)");
     
@@ -105,7 +106,7 @@ void sortRow() {
   // where to stop sorting
   int xend = 0;
   
-  while(xend < width-1) {
+  while(xend < img.width-1) {
     switch(mode) {
       case 0:
         x = getFirstNotBlackX(x, y);
@@ -155,7 +156,7 @@ void sortColumn() {
   // where to stop sorting
   int yend = 0;
   
-  while(yend < height-1) {
+  while(yend < img.height-1) {
     switch(mode) {
       case 0:
         y = getFirstNotBlackY(x, y);
@@ -200,7 +201,7 @@ int getFirstNotBlackX(int x, int y) {
   
   while(img.pixels[x + y * img.width] < blackValue) {
     x++;
-    if(x >= width) 
+    if(x >= img.width) 
       return -1;
   }
   
@@ -212,8 +213,8 @@ int getNextBlackX(int x, int y) {
   
   while(img.pixels[x + y * img.width] > blackValue) {
     x++;
-    if(x >= width) 
-      return width-1;
+    if(x >= img.width) 
+      return img.width-1;
   }
   
   return x-1;
@@ -224,7 +225,7 @@ int getFirstBrightX(int x, int y) {
   
   while(brightness(img.pixels[x + y * img.width]) < brightnessValue) {
     x++;
-    if(x >= width)
+    if(x >= img.width)
       return -1;
   }
   
@@ -237,7 +238,7 @@ int getNextDarkX(int _x, int _y) {
   
   while(brightness(img.pixels[x + y * img.width]) > brightnessValue) {
     x++;
-    if(x >= width) return width-1;
+    if(x >= img.width) return img.width-1;
   }
   return x-1;
 }
@@ -247,7 +248,7 @@ int getFirstNotWhiteX(int x, int y) {
 
   while(img.pixels[x + y * img.width] > whiteValue) {
     x++;
-    if(x >= width) 
+    if(x >= img.width) 
       return -1;
   }
   return x;
@@ -258,8 +259,8 @@ int getNextWhiteX(int x, int y) {
 
   while(img.pixels[x + y * img.width] < whiteValue) {
     x++;
-    if(x >= width) 
-      return width-1;
+    if(x >= img.width) 
+      return img.width-1;
   }
   return x-1;
 }
@@ -268,10 +269,10 @@ int getNextWhiteX(int x, int y) {
 // black y
 int getFirstNotBlackY(int x, int y) {
 
-  if(y < height) {
+  if(y < img.height) {
     while(img.pixels[x + y * img.width] < blackValue) {
       y++;
-      if(y >= height)
+      if(y >= img.height)
         return -1;
     }
   }
@@ -282,11 +283,11 @@ int getFirstNotBlackY(int x, int y) {
 int getNextBlackY(int x, int y) {
   y++;
 
-  if(y < height) {
+  if(y < img.height) {
     while(img.pixels[x + y * img.width] > blackValue) {
       y++;
-      if(y >= height)
-        return height-1;
+      if(y >= img.height)
+        return img.height-1;
     }
   }
   
@@ -296,10 +297,10 @@ int getNextBlackY(int x, int y) {
 // brightness y
 int getFirstBrightY(int x, int y) {
 
-  if(y < height) {
+  if(y < img.height) {
     while(brightness(img.pixels[x + y * img.width]) < brightnessValue) {
       y++;
-      if(y >= height)
+      if(y >= img.height)
         return -1;
     }
   }
@@ -310,11 +311,11 @@ int getFirstBrightY(int x, int y) {
 int getNextDarkY(int x, int y) {
   y++;
 
-  if(y < height) {
+  if(y < img.height) {
     while(brightness(img.pixels[x + y * img.width]) > brightnessValue) {
       y++;
-      if(y >= height)
-        return height-1;
+      if(y >= img.height)
+        return img.height-1;
     }
   }
   return y-1;
@@ -323,10 +324,10 @@ int getNextDarkY(int x, int y) {
 // white y
 int getFirstNotWhiteY(int x, int y) {
 
-  if(y < height) {
+  if(y < img.height) {
     while(img.pixels[x + y * img.width] > whiteValue) {
       y++;
-      if(y >= height)
+      if(y >= img.height)
         return -1;
     }
   }
@@ -337,11 +338,11 @@ int getFirstNotWhiteY(int x, int y) {
 int getNextWhiteY(int x, int y) {
   y++;
   
-  if(y < height) {
+  if(y < img.height) {
     while(img.pixels[x + y * img.width] < whiteValue) {
       y++;
-      if(y >= height) 
-        return height-1;
+      if(y >= img.height) 
+        return img.height-1;
     }
   }
   
