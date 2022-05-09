@@ -34,7 +34,7 @@ int blackValue = -3456789;
 // sort all pixels brighter than the threshold
 int brightValue = 127;
 // sort all pixels darker than the threshold
-int darkValue = 127;
+int darkValue = 223;
 
 
 int row = 0;
