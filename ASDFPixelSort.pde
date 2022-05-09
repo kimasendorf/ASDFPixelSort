@@ -12,7 +12,7 @@
  
  */
 
-int mode = 3;
+int mode = 0;
 
 // image path is relative to sketch directory
 PImage img;
@@ -59,34 +59,36 @@ void setup() {
 
 void draw() {
   
-  // loop through columns
-  println("Sorting Columns");
-  while (column < img.width-1) {
-    img.loadPixels();
-    sortColumn();
-    column++;
-    img.updatePixels();
-  }
-  
-  // loop through rows
-  println("Sorting Rows");
-  while (row < img.height-1) {
-    img.loadPixels();
-    sortRow();
-    row++;
-    img.updatePixels();
-  }
-  
-  // load updated image onto surface and scale to fit the display width,height
-  image(img, 0, 0, width, height);
-  
-  if (!saved && frameCount >= loops) {
+  if (frameCount <= loops) {
     
-	  // save img
+    // loop through columns
+    println("Sorting Columns");
+    while (column < img.width-1) {
+      img.loadPixels();
+      sortColumn();
+      column++;
+      img.updatePixels();
+    }
+    
+    // loop through rows
+    println("Sorting Rows");
+    while (row < img.height-1) {
+      img.loadPixels();
+      sortRow();
+      row++;
+      img.updatePixels();
+    }
+  }
+  
+  // load updated image onto surface and scale to fit the display width and height
+  image(img, 0, 0, width, height);
+    
+  if (!saved && frameCount >= loops) {
+    // save img
     img.save(imgFileName + "_" + mode + ".png");
-	
+  
     saved = true;
-    println("Saved " + frameCount + " Frame(s)");
+    println("Saved frame " + frameCount);
     
     // exiting here can interrupt file save, wait for user to trigger exit
     println("Click or press any key to exit...");
