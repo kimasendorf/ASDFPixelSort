@@ -1,30 +1,41 @@
 
-/*
+/********
 
  ASDF Pixel Sort
  Kim Asendorf | 2010 | kimasendorf.com
  
- sorting modes
- 
- 0 = black
- 1 = brightness
- 2 = white
+ Sorting modes
+ 0 = white
+ 1 = black
+ 2 = bright
+ 3 = dark
  
  */
 
-int mode = 1;
+int mode = 3;
 
 // image path is relative to sketch directory
 PImage img;
-String imgFileName = "MyImage";
-String fileType = "png";
+String imgFileName = "mountains";
+String fileType = "jpg";
 
 int loops = 1;
 
 // threshold values to determine sorting start and end pixels
-int blackValue = -16000000;
-int brightnessValue = 60;
-int whiteValue = -13000000;
+// using the absolute rgb value
+// r*g*b = 255*255*255 = 16581375
+// 0 = white
+// -16581375 = black
+// sort all pixels whiter than the threshold
+int whiteValue = -12345678;
+// sort all pixels blacker than the threshold
+int blackValue = -3456789;
+// using the brightness value
+// sort all pixels brighter than the threshold
+int brightValue = 127;
+// sort all pixels darker than the threshold
+int darkValue = 127;
+
 
 int row = 0;
 int column = 0;
@@ -32,7 +43,7 @@ int column = 0;
 boolean saved = false;
 
 void setup() {
-  img = loadImage(imgFileName+"."+fileType);
+  img = loadImage(imgFileName + "." + fileType);
   
   // use only numbers (not variables) for the size() command, Processing 3
   size(1, 1);
@@ -49,18 +60,18 @@ void setup() {
 void draw() {
   
   // loop through columns
-  while(column < img.width-1) {
-    println("Sorting Column " + column);
-    img.loadPixels(); 
+  println("Sorting Columns");
+  while (column < img.width-1) {
+    img.loadPixels();
     sortColumn();
     column++;
     img.updatePixels();
   }
   
   // loop through rows
-  while(row < img.height-1) {
-    println("Sorting Row " + column);
-    img.loadPixels(); 
+  println("Sorting Rows");
+  while (row < img.height-1) {
+    img.loadPixels();
     sortRow();
     row++;
     img.updatePixels();
@@ -69,13 +80,13 @@ void draw() {
   // load updated image onto surface and scale to fit the display width,height
   image(img, 0, 0, width, height);
   
-  if(!saved && frameCount >= loops) {
+  if (!saved && frameCount >= loops) {
     
-	// save img
-    img.save(imgFileName+"_"+mode+".png");
+	  // save img
+    img.save(imgFileName + "_" + mode + ".png");
 	
     saved = true;
-    println("Saved "+frameCount+" Frame(s)");
+    println("Saved " + frameCount + " Frame(s)");
     
     // exiting here can interrupt file save, wait for user to trigger exit
     println("Click or press any key to exit...");
@@ -83,15 +94,13 @@ void draw() {
 }
 
 void keyPressed() {
-  if(saved)
-  {
+  if (saved) {
     System.exit(0);
   }
 }
 
 void mouseClicked() {
-  if(saved)
-  {
+  if (saved) {
     System.exit(0);
   }
 }
@@ -104,44 +113,48 @@ void sortRow() {
   int x = 0;
   
   // where to stop sorting
-  int xend = 0;
+  int xEnd = 0;
   
-  while(xend < img.width-1) {
-    switch(mode) {
+  while (xEnd < img.width-1) {
+    switch (mode) {
       case 0:
-        x = getFirstNotBlackX(x, y);
-        xend = getNextBlackX(x, y);
+        x = getFirstNoneWhiteX(x, y);
+        xEnd = getNextWhiteX(x, y);
         break;
       case 1:
-        x = getFirstBrightX(x, y);
-        xend = getNextDarkX(x, y);
+        x = getFirstNoneBlackX(x, y);
+        xEnd = getNextBlackX(x, y);
         break;
       case 2:
-        x = getFirstNotWhiteX(x, y);
-        xend = getNextWhiteX(x, y);
+        x = getFirstNoneBrightX(x, y);
+        xEnd = getNextBrightX(x, y);
+        break;
+      case 3:
+        x = getFirstNoneDarkX(x, y);
+        xEnd = getNextDarkX(x, y);
         break;
       default:
         break;
     }
     
-    if(x < 0) break;
+    if (x < 0) break;
     
-    int sortLength = xend-x;
+    int sortingLength = xEnd-x;
     
-    color[] unsorted = new color[sortLength];
-    color[] sorted = new color[sortLength];
+    color[] unsorted = new color[sortingLength];
+    color[] sorted = new color[sortingLength];
     
-    for(int i=0; i<sortLength; i++) {
+    for (int i = 0; i < sortingLength; i++) {
       unsorted[i] = img.pixels[x + i + y * img.width];
     }
     
     sorted = sort(unsorted);
     
-    for(int i=0; i<sortLength; i++) {
+    for (int i = 0; i < sortingLength; i++) {
       img.pixels[x + i + y * img.width] = sorted[i];      
     }
     
-    x = xend+1;
+    x = xEnd+1;
   }
 }
 
@@ -154,197 +167,209 @@ void sortColumn() {
   int y = 0;
   
   // where to stop sorting
-  int yend = 0;
+  int yEnd = 0;
   
-  while(yend < img.height-1) {
-    switch(mode) {
+  while (yEnd < img.height-1) {
+    switch (mode) {
       case 0:
-        y = getFirstNotBlackY(x, y);
-        yend = getNextBlackY(x, y);
+        y = getFirstNoneWhiteY(x, y);
+        yEnd = getNextWhiteY(x, y);
         break;
       case 1:
-        y = getFirstBrightY(x, y);
-        yend = getNextDarkY(x, y);
+        y = getFirstNoneBlackY(x, y);
+        yEnd = getNextBlackY(x, y);
         break;
       case 2:
-        y = getFirstNotWhiteY(x, y);
-        yend = getNextWhiteY(x, y);
+        y = getFirstNoneBrightY(x, y);
+        yEnd = getNextBrightY(x, y);
+        break;
+      case 3:
+        y = getFirstNoneDarkY(x, y);
+        yEnd = getNextDarkY(x, y);
         break;
       default:
         break;
     }
     
-    if(y < 0) break;
+    if (y < 0) break;
     
-    int sortLength = yend-y;
+    int sortingLength = yEnd-y;
     
-    color[] unsorted = new color[sortLength];
-    color[] sorted = new color[sortLength];
+    color[] unsorted = new color[sortingLength];
+    color[] sorted = new color[sortingLength];
     
-    for(int i=0; i<sortLength; i++) {
+    for (int i = 0; i < sortingLength; i++) {
       unsorted[i] = img.pixels[x + (y+i) * img.width];
     }
     
     sorted = sort(unsorted);
     
-    for(int i=0; i<sortLength; i++) {
+    for (int i = 0; i < sortingLength; i++) {
       img.pixels[x + (y+i) * img.width] = sorted[i];
     }
     
-    y = yend+1;
+    y = yEnd+1;
   }
 }
 
-
-// black x
-int getFirstNotBlackX(int x, int y) {
-  
-  while(img.pixels[x + y * img.width] < blackValue) {
-    x++;
-    if(x >= img.width) 
-      return -1;
-  }
-  
-  return x;
-}
-
-int getNextBlackX(int x, int y) {
-  x++;
-  
-  while(img.pixels[x + y * img.width] > blackValue) {
-    x++;
-    if(x >= img.width) 
-      return img.width-1;
-  }
-  
-  return x-1;
-}
-
-// brightness x
-int getFirstBrightX(int x, int y) {
-  
-  while(brightness(img.pixels[x + y * img.width]) < brightnessValue) {
-    x++;
-    if(x >= img.width)
-      return -1;
-  }
-  
-  return x;
-}
-
-int getNextDarkX(int _x, int _y) {
-  int x = _x+1;
-  int y = _y;
-  
-  while(brightness(img.pixels[x + y * img.width]) > brightnessValue) {
-    x++;
-    if(x >= img.width) return img.width-1;
-  }
-  return x-1;
-}
 
 // white x
-int getFirstNotWhiteX(int x, int y) {
-
-  while(img.pixels[x + y * img.width] > whiteValue) {
+int getFirstNoneWhiteX(int x, int y) {
+  while (img.pixels[x + y * img.width] < whiteValue) {
     x++;
-    if(x >= img.width) 
-      return -1;
+    if (x >= img.width) return -1;
   }
   return x;
 }
 
 int getNextWhiteX(int x, int y) {
   x++;
-
-  while(img.pixels[x + y * img.width] < whiteValue) {
+  while (img.pixels[x + y * img.width] > whiteValue) {
     x++;
-    if(x >= img.width) 
-      return img.width-1;
+    if (x >= img.width) return img.width-1;
   }
   return x-1;
 }
 
-
-// black y
-int getFirstNotBlackY(int x, int y) {
-
-  if(y < img.height) {
-    while(img.pixels[x + y * img.width] < blackValue) {
-      y++;
-      if(y >= img.height)
-        return -1;
-    }
+// black x
+int getFirstNoneBlackX(int x, int y) {
+  while (img.pixels[x + y * img.width] > blackValue) {
+    x++;
+    if (x >= img.width) return -1;
   }
-  
-  return y;
+  return x;
 }
 
-int getNextBlackY(int x, int y) {
-  y++;
-
-  if(y < img.height) {
-    while(img.pixels[x + y * img.width] > blackValue) {
-      y++;
-      if(y >= img.height)
-        return img.height-1;
-    }
+int getNextBlackX(int x, int y) {
+  x++;
+  while (img.pixels[x + y * img.width] < blackValue) {
+    x++;
+    if (x >= img.width) return img.width-1;
   }
-  
-  return y-1;
+  return x-1;
 }
 
-// brightness y
-int getFirstBrightY(int x, int y) {
-
-  if(y < img.height) {
-    while(brightness(img.pixels[x + y * img.width]) < brightnessValue) {
-      y++;
-      if(y >= img.height)
-        return -1;
-    }
+// bright x
+int getFirstNoneBrightX(int x, int y) {
+  while (brightness(img.pixels[x + y * img.width]) < brightValue) {
+    x++;
+    if (x >= img.width) return -1;
   }
-  
-  return y;
+  return x;
 }
 
-int getNextDarkY(int x, int y) {
-  y++;
-
-  if(y < img.height) {
-    while(brightness(img.pixels[x + y * img.width]) > brightnessValue) {
-      y++;
-      if(y >= img.height)
-        return img.height-1;
-    }
+int getNextBrightX(int x, int y) {
+  x++;
+  while (brightness(img.pixels[x + y * img.width]) > brightValue) {
+    x++;
+    if (x >= img.width) return img.width-1;
   }
-  return y-1;
+  return x-1;
+}
+
+// dark x
+int getFirstNoneDarkX(int x, int y) {
+  while (brightness(img.pixels[x + y * img.width]) > darkValue) {
+    x++;
+    if (x >= img.width) return -1;
+  }
+  return x;
+}
+
+int getNextDarkX(int x, int y) {
+  x++;
+  while (brightness(img.pixels[x + y * img.width]) < darkValue) {
+    x++;
+    if (x >= img.width) return img.width-1;
+  }
+  return x-1;
 }
 
 // white y
-int getFirstNotWhiteY(int x, int y) {
-
-  if(y < img.height) {
-    while(img.pixels[x + y * img.width] > whiteValue) {
+int getFirstNoneWhiteY(int x, int y) {
+  if (y < img.height) {
+    while (img.pixels[x + y * img.width] < whiteValue) {
       y++;
-      if(y >= img.height)
-        return -1;
+      if (y >= img.height) return -1;
     }
   }
-  
   return y;
 }
 
 int getNextWhiteY(int x, int y) {
   y++;
-  
-  if(y < img.height) {
-    while(img.pixels[x + y * img.width] < whiteValue) {
+  if (y < img.height) {
+    while (img.pixels[x + y * img.width] > whiteValue) {
       y++;
-      if(y >= img.height) 
-        return img.height-1;
+      if (y >= img.height) return img.height-1;
     }
   }
-  
+  return y-1;
+}
+
+
+// black y
+int getFirstNoneBlackY(int x, int y) {
+  if (y < img.height) {
+    while (img.pixels[x + y * img.width] > blackValue) {
+      y++;
+      if (y >= img.height) return -1;
+    }
+  }
+  return y;
+}
+
+int getNextBlackY(int x, int y) {
+  y++;
+  if (y < img.height) {
+    while (img.pixels[x + y * img.width] < blackValue) {
+      y++;
+      if (y >= img.height) return img.height-1;
+    }
+  }
+  return y-1;
+}
+
+// bright y
+int getFirstNoneBrightY(int x, int y) {
+  if (y < img.height) {
+    while (brightness(img.pixels[x + y * img.width]) < brightValue) {
+      y++;
+      if (y >= img.height) return -1;
+    }
+  }
+  return y;
+}
+
+int getNextBrightY(int x, int y) {
+  y++;
+  if (y < img.height) {
+    while (brightness(img.pixels[x + y * img.width]) > brightValue) {
+      y++;
+      if (y >= img.height) return img.height-1;
+    }
+  }
+  return y-1;
+}
+
+// dark y
+int getFirstNoneDarkY(int x, int y) {
+  if (y < img.height) {
+    while (brightness(img.pixels[x + y * img.width]) > darkValue) {
+      y++;
+      if (y >= img.height) return -1;
+    }
+  }
+  return y;
+}
+
+int getNextDarkY(int x, int y) {
+  y++;
+  if (y < img.height) {
+    while (brightness(img.pixels[x + y * img.width]) < darkValue) {
+      y++;
+      if (y >= img.height) return img.height-1;
+    }
+  }
   return y-1;
 }
